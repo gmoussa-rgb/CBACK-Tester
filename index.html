@@ -15,15 +15,14 @@
             --bg: #f0f2f5; 
         }
         
-        /* Centering Logic */
         body { 
             font-family: -apple-system, sans-serif; 
             background-color: var(--bg); 
             margin: 0; 
             display: flex; 
-            justify-content: center; /* Horizontal Center */
-            align-items: center;     /* Vertical Center */
-            min-height: 100vh;       /* Full Viewport Height */
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
             padding: 20px;
             box-sizing: border-box;
         }
@@ -43,7 +42,6 @@
         .form-group { margin-bottom: 0.7rem; }
         label { display: block; margin-bottom: 4px; font-weight: bold; color: #555; font-size: 0.75rem; }
         
-        /* Currency Input Styling */
         .currency-wrap { position: relative; display: flex; align-items: center; }
         .currency-wrap::before { content: '$'; position: absolute; left: 10px; color: #555; font-size: 0.9rem; font-weight: bold; }
         .currency-wrap input { padding-left: 22px; }
@@ -178,12 +176,20 @@
 
     function populateDropdowns() {
         const prefixes = ['start', 'end'];
+        const currentYear = new Date().getFullYear();
+        
         prefixes.forEach(prefix => {
             const m = document.getElementById(prefix + 'M'), d = document.getElementById(prefix + 'D'), y = document.getElementById(prefix + 'Y');
+            
             m.add(new Option("MM", "")); months.forEach(val => m.add(new Option(val, val)));
+            
             d.add(new Option("DD", "")); for (let i = 1; i <= 31; i++) d.add(new Option(String(i).padStart(2, '0'), String(i).padStart(2, '0')));
-            y.add(new Option("YYYY", "")); const curY = new Date().getFullYear();
-            for (let i = curY - 10; i <= curY + 10; i++) y.add(new Option(i, i));
+            
+            y.add(new Option("YYYY", ""));
+            // Loops from 10 years in future down to 10 years in past
+            for (let i = currentYear + 10; i >= currentYear - 10; i--) {
+                y.add(new Option(i, i));
+            }
         });
     }
 
