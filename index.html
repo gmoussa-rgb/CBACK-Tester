@@ -7,7 +7,6 @@
     <style>
         :root { --primary: #2c3e50; --accent: #d32f2f; --bg: #f0f2f5; }
         
-        /* Centering the entire page content */
         body { 
             font-family: -apple-system, sans-serif; 
             background-color: var(--bg); 
@@ -19,7 +18,6 @@
             min-height: 100vh;
         }
         
-        /* Dashboard Container */
         .dashboard { 
             display: grid; 
             grid-template-columns: 1fr 350px; 
@@ -34,13 +32,10 @@
         .form-group { margin-bottom: 1.2rem; }
         label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; font-size: 0.85rem; }
         
-        /* Input Styling - Removing Spinners */
+        /* Remove Spinners */
         input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
-        input[type=number] { -moz-appearance: textfield; } /* Firefox */
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
 
         input, select { 
             width: 100%; 
@@ -58,23 +53,16 @@
         .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.95rem; }
         .total-row { border-top: 2px solid #333; margin-top: 10px; padding-top: 10px; font-weight: 800; font-size: 1.2rem; }
         
-        /* Buttons */
         .btn-add { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 0.9rem; }
         .btn-reset { width: 100%; background: none; border: 1px solid #ccc; padding: 8px; border-radius: 6px; margin-top: 12px; cursor: pointer; font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
-        .btn-reset:hover { background: #fdfdfd; color: #333; border-color: #999; }
         
-        /* Sidebar/List */
         .sidebar { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         .list-item { background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 12px; border-left: 5px solid var(--primary); position: relative; }
         .list-name { font-weight: bold; display: block; font-size: 0.9rem; margin-bottom: 3px; color: #333; }
         .list-amt { color: var(--accent); font-weight: 800; font-size: 1rem; }
         .btn-del { position: absolute; right: 12px; top: 15px; background: none; border: none; color: #bbb; cursor: pointer; font-size: 1.2rem; line-height: 1; }
-        .btn-del:hover { color: var(--accent); }
 
-        @media (max-width: 850px) { 
-            .dashboard { grid-template-columns: 1fr; } 
-            body { padding: 10px; }
-        }
+        @media (max-width: 850px) { .dashboard { grid-template-columns: 1fr; } body { padding: 10px; } }
     </style>
 </head>
 <body>
@@ -117,8 +105,8 @@
         </div>
 
         <div class="results">
-            <div class="row"><span>Months Active:</span><span id="mActive" class="val">0</span></div>
-            <div class="row"><span>Months Remaining:</span><span id="mLeft" class="val">48</span></div>
+            <div class="row"><span>Months Active:</span><span id="mActive">0</span></div>
+            <div class="row"><span>Months Remaining:</span><span id="mLeft">48</span></div>
             <div class="row total-row">
                 <span>NET PAYABLE:</span>
                 <span id="finalAmt" style="color:var(--accent)">$0.00</span>
@@ -131,8 +119,7 @@
 
     <div class="sidebar">
         <h2>Tracking List</h2>
-        <div id="trackingList">
-            </div>
+        <div id="trackingList"></div>
     </div>
 </div>
 
@@ -153,11 +140,16 @@
             const d = document.getElementById(prefix + 'D');
             const y = document.getElementById(prefix + 'Y');
             
+            m.add(new Option("MM", ""));
             months.forEach(val => m.add(new Option(val, val)));
+
+            d.add(new Option("DD", ""));
             for (let i = 1; i <= 31; i++) {
                 const val = String(i).padStart(2, '0');
                 d.add(new Option(val, val));
             }
+
+            y.add(new Option("YYYY", ""));
             const currentYear = new Date().getFullYear();
             for (let i = currentYear - 10; i <= currentYear + 5; i++) {
                 y.add(new Option(i, i));
@@ -169,16 +161,22 @@
         const funding = parseFloat(document.getElementById('funding').value) || 0;
         const newFunding = parseFloat(document.getElementById('newFunding').value) || 0;
 
-        const start = new Date(
-            document.getElementById('startY').value,
-            document.getElementById('startM').value - 1,
-            document.getElementById('startD').value
-        );
-        const end = new Date(
-            document.getElementById('endY').value,
-            document.getElementById('endM').value - 1,
-            document.getElementById('endD').value
-        );
+        const sY = document.getElementById('startY').value;
+        const sM = document.getElementById('startM').value;
+        const sD = document.getElementById('startD').value;
+
+        const eY = document.getElementById('endY').value;
+        const eM = document.getElementById('endM').value;
+        const eD = document.getElementById('endD').value;
+
+        // Only calculate if all parts of BOTH dates are selected
+        if (!sY || !sM || !sD || !eY || !eM || !eD) {
+            updateUI(0, 48, 0);
+            return;
+        }
+
+        const start = new Date(sY, sM - 1, sD);
+        const end = new Date(eY, eM - 1, eD);
 
         let active = 0;
         if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
@@ -191,9 +189,13 @@
         const grossLiability = (funding / 48) * remaining;
         const netPayable = Math.max(0, grossLiability - newFunding);
 
+        updateUI(active, remaining, netPayable);
+    }
+
+    function updateUI(active, remaining, net) {
         document.getElementById('mActive').innerText = active;
         document.getElementById('mLeft').innerText = remaining;
-        document.getElementById('finalAmt').innerText = formatCurr(netPayable);
+        document.getElementById('finalAmt').innerText = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(net);
     }
 
     function addToList() {
@@ -209,12 +211,7 @@
         const container = document.getElementById('trackingList');
         container.innerHTML = savedDeals.length ? '' : '<p style="color:#aaa; font-size:0.8rem; text-align:center; padding-top:20px;">No saved deals.</p>';
         savedDeals.forEach(deal => {
-            container.innerHTML += `
-                <div class="list-item">
-                    <span class="list-name">${deal.name}</span>
-                    <span class="list-amt">${deal.amount}</span>
-                    <button class="btn-del" onclick="deleteItem(${deal.id})">×</button>
-                </div>`;
+            container.innerHTML += `<div class="list-item"><span class="list-name">${deal.name}</span><span class="list-amt">${deal.amount}</span><button class="btn-del" onclick="deleteItem(${deal.id})">×</button></div>`;
         });
     }
 
@@ -228,20 +225,20 @@
         document.getElementById('funding').value = 0;
         document.getElementById('newFunding').value = 0;
         document.getElementById('accName').value = "";
+        
+        // Reset Activation to placeholders
+        document.getElementById('startM').value = "";
+        document.getElementById('startD').value = "";
+        document.getElementById('startY').value = "";
+
+        // Default Shutdown to Today
         const today = new Date();
-        document.getElementById('startM').value = "01";
-        document.getElementById('startD').value = "01";
-        document.getElementById('startY').value = today.getFullYear() - 1;
         document.getElementById('endM').value = String(today.getMonth() + 1).padStart(2, '0');
         document.getElementById('endD').value = String(today.getDate()).padStart(2, '0');
         document.getElementById('endY').value = today.getFullYear();
+        
         calculate();
     }
-
-    function formatCurr(num) {
-        return new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(num);
-    }
 </script>
-
 </body>
 </html>
