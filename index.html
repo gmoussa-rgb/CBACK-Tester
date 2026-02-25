@@ -139,7 +139,7 @@
             <hr style="border: 0; border-top: 1px solid #ddd; margin: 5px 0;">
             <div class="row"><span>Initial Funding:</span><span id="resInitial">$0.00</span></div>
             <div class="row"><span>Clawback Amount:</span><span id="resClawback">$0.00</span></div>
-            <div class="row"><span>New Funding Offset:</span><span id="resOffset" style="color:var(--gain-green)">$0.00</span></div>
+            <div class="row"><span>New Funding Offset:</span><span id="resOffset">$0.00</span></div>
             <div class="row total-row">
                 <span>LIABILITY AMOUNT:</span>
                 <span id="finalAmt">$0.00</span>
@@ -186,7 +186,6 @@
             d.add(new Option("DD", "")); for (let i = 1; i <= 31; i++) d.add(new Option(String(i).padStart(2, '0'), String(i).padStart(2, '0')));
             
             y.add(new Option("YYYY", ""));
-            // Loops from current year down to 15 years in past
             for (let i = currentYear; i >= currentYear - 15; i--) {
                 y.add(new Option(i, i));
             }
@@ -215,7 +214,7 @@
         document.getElementById('mLeft').innerText = data.rem;
         document.getElementById('resInitial').innerText = formatCurr(funding);
         document.getElementById('resClawback').innerText = formatCurr(data.clawback);
-        document.getElementById('resOffset').innerText = "-" + formatCurr(offset);
+        document.getElementById('resOffset').innerText = formatCurr(offset);
         
         const el = document.getElementById('finalAmt');
         const formatted = formatCurr(Math.abs(data.net));
