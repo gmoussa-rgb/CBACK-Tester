@@ -35,13 +35,16 @@
         .btn-reset { width: 100%; background: none; border: 1px solid #ccc; padding: 8px; border-radius: 6px; margin-top: 12px; cursor: pointer; font-size: 0.7rem; color: #888; text-transform: uppercase; }
         
         /* List Styling */
-        .list-item { background: #fdfdfd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee; border-left: 6px solid var(--primary); position: relative; font-size: 0.85rem; }
+        .list-item { background: #fdfdfd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee; border-left: 6px solid var(--primary); position: relative; font-size: 0.85rem; text-align: left; }
         .list-details { color: #666; line-height: 1.4; margin-top: 5px; }
         .list-name { font-weight: 800; font-size: 1rem; color: var(--primary); }
         .list-amt { font-weight: 800; font-size: 1.1rem; display: block; margin-top: 8px; }
         .btn-del { position: absolute; right: 10px; top: 10px; background: none; border: none; color: #bbb; cursor: pointer; font-size: 1.4rem; }
         
-        .btn-csv { width: 100%; background: var(--gain-green); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 0.8rem; }
+        /* Sidebar Action Buttons */
+        .btn-csv { width: 100%; background: var(--gain-green); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 0.85rem; }
+        .btn-clear-all { width: 100%; background: none; border: 1px solid var(--debt-red); color: var(--debt-red); padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 0.75rem; text-transform: uppercase; }
+        .btn-clear-all:hover { background: #fff5f5; }
 
         @media (max-width: 950px) { .dashboard { grid-template-columns: 1fr; } }
     </style>
@@ -102,6 +105,7 @@
         <h2>Tracking List</h2>
         <div id="trackingList"></div>
         <button class="btn-csv" onclick="downloadCSV()">Download CSV for Excel</button>
+        <button class="btn-clear-all" onclick="clearAllItems()">Clear All Items</button>
     </div>
 </div>
 
@@ -132,9 +136,7 @@
         const sY = document.getElementById('startY').value, sM = document.getElementById('startM').value, sD = document.getElementById('startD').value;
         const eY = document.getElementById('endY').value, eM = document.getElementById('endM').value, eD = document.getElementById('endD').value;
 
-        if (!sY || !sM || !sD || !eY || !eM || !eD) {
-            updateUI(0, 48, 0); return;
-        }
+        if (!sY || !sM || !sD || !eY || !eM || !eD) { updateUI(0, 48, 0); return; }
 
         const start = new Date(sY, sM - 1, sD), end = new Date(eY, eM - 1, eD);
         let active = 0;
@@ -192,6 +194,15 @@
                     <span class="list-amt ${deal.color}">${deal.amount}</span>
                 </div>`;
         });
+    }
+
+    function clearAllItems() {
+        if (savedDeals.length === 0) return;
+        if (confirm("Are you sure you want to delete ALL tracked deals? This cannot be undone.")) {
+            savedDeals = [];
+            localStorage.setItem('savedDeals', JSON.stringify(savedDeals));
+            renderList();
+        }
     }
 
     function downloadCSV() {
