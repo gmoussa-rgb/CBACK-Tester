@@ -6,36 +6,75 @@
     <title>Liability Dashboard</title>
     <style>
         :root { --primary: #2c3e50; --accent: #d32f2f; --bg: #f0f2f5; }
-        body { font-family: -apple-system, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
         
-        /* Layout Grid */
-        .dashboard { display: grid; grid-template-columns: 1fr 350px; gap: 20px; width: 100%; max-width: 900px; }
+        /* Centering the entire page content */
+        body { 
+            font-family: -apple-system, sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; 
+            padding: 40px 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
+            min-height: 100vh;
+        }
         
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); height: fit-content; }
-        h2 { margin-top: 0; font-size: 1.1rem; text-transform: uppercase; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        /* Dashboard Container */
+        .dashboard { 
+            display: grid; 
+            grid-template-columns: 1fr 350px; 
+            gap: 30px; 
+            width: 100%; 
+            max-width: 950px; 
+        }
         
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 0.8rem; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 0.95rem; }
-        .date-row { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 5px; }
+        .card { background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); height: fit-content; }
+        h2 { margin-top: 0; font-size: 1.1rem; text-transform: uppercase; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 12px; margin-bottom: 20px; }
         
-        .results { background: #f9f9f9; padding: 1rem; border-radius: 8px; margin-top: 1rem; border: 1px solid #eee; }
-        .row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.9rem; }
-        .total-row { border-top: 2px solid #333; margin-top: 8px; padding-top: 8px; font-weight: 800; font-size: 1.1rem; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; font-size: 0.85rem; }
+        
+        /* Input Styling - Removing Spinners */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] { -moz-appearance: textfield; } /* Firefox */
+
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-size: 1rem; 
+            background: #fff;
+        }
+        
+        .date-row { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 8px; }
+        
+        .results { background: #f8f9fa; padding: 1.2rem; border-radius: 8px; margin-top: 1.5rem; border: 1px solid #e9ecef; }
+        .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.95rem; }
+        .total-row { border-top: 2px solid #333; margin-top: 10px; padding-top: 10px; font-weight: 800; font-size: 1.2rem; }
         
         /* Buttons */
-        .btn-add { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-reset { width: 100%; background: #e0e0e0; border: none; padding: 8px; border-radius: 6px; margin-top: 10px; cursor: pointer; font-size: 0.75rem; color: #666; }
+        .btn-add { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 0.9rem; }
+        .btn-reset { width: 100%; background: none; border: 1px solid #ccc; padding: 8px; border-radius: 6px; margin-top: 12px; cursor: pointer; font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-reset:hover { background: #fdfdfd; color: #333; border-color: #999; }
         
         /* Sidebar/List */
-        .sidebar { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        .list-item { background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 10px; border-left: 4px solid var(--primary); position: relative; }
-        .list-name { font-weight: bold; display: block; font-size: 0.9rem; }
-        .list-amt { color: var(--accent); font-weight: bold; }
-        .btn-del { position: absolute; right: 10px; top: 10px; background: none; border: none; color: #ccc; cursor: pointer; font-size: 1rem; }
+        .sidebar { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .list-item { background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 12px; border-left: 5px solid var(--primary); position: relative; }
+        .list-name { font-weight: bold; display: block; font-size: 0.9rem; margin-bottom: 3px; color: #333; }
+        .list-amt { color: var(--accent); font-weight: 800; font-size: 1rem; }
+        .btn-del { position: absolute; right: 12px; top: 15px; background: none; border: none; color: #bbb; cursor: pointer; font-size: 1.2rem; line-height: 1; }
         .btn-del:hover { color: var(--accent); }
 
-        @media (max-width: 800px) { .dashboard { grid-template-columns: 1fr; } }
+        @media (max-width: 850px) { 
+            .dashboard { grid-template-columns: 1fr; } 
+            body { padding: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -50,12 +89,12 @@
         </div>
 
         <div class="form-group">
-            <label>Original Funding ($)</label>
+            <label>Original Funding Amount ($)</label>
             <input type="number" id="funding" value="0" oninput="calculate()">
         </div>
 
         <div class="form-group">
-            <label>Activation Date (M/D/Y)</label>
+            <label>Activation Date (MM/DD/YYYY)</label>
             <div class="date-row">
                 <select id="startM" onchange="calculate()"></select>
                 <select id="startD" onchange="calculate()"></select>
@@ -64,7 +103,7 @@
         </div>
 
         <div class="form-group">
-            <label>Shutdown Date (M/D/Y)</label>
+            <label>Shutdown Date (MM/DD/YYYY)</label>
             <div class="date-row">
                 <select id="endM" onchange="calculate()"></select>
                 <select id="endD" onchange="calculate()"></select>
@@ -78,13 +117,16 @@
         </div>
 
         <div class="results">
-            <div class="row"><span>Months Active:</span><span id="mActive">0</span></div>
-            <div class="row"><span>Months Remaining:</span><span id="mLeft">48</span></div>
-            <div class="row" style="font-weight:bold;"><span>Net Liability:</span><span id="finalAmt" style="color:var(--accent)">$0.00</span></div>
+            <div class="row"><span>Months Active:</span><span id="mActive" class="val">0</span></div>
+            <div class="row"><span>Months Remaining:</span><span id="mLeft" class="val">48</span></div>
+            <div class="row total-row">
+                <span>NET PAYABLE:</span>
+                <span id="finalAmt" style="color:var(--accent)">$0.00</span>
+            </div>
         </div>
 
         <button class="btn-add" onclick="addToList()">Add to Tracking List</button>
-        <button class="btn-reset" onclick="resetAll()">Clear Calculator</button>
+        <button class="btn-reset" onclick="resetAll()">Reset All Fields</button>
     </div>
 
     <div class="sidebar">
@@ -105,35 +147,53 @@
     };
 
     function populateDropdowns() {
-        const selects = ['start', 'end'];
-        selects.forEach(prefix => {
-            const m = document.getElementById(prefix + 'M'), d = document.getElementById(prefix + 'D'), y = document.getElementById(prefix + 'Y');
+        const prefixes = ['start', 'end'];
+        prefixes.forEach(prefix => {
+            const m = document.getElementById(prefix + 'M');
+            const d = document.getElementById(prefix + 'D');
+            const y = document.getElementById(prefix + 'Y');
+            
             months.forEach(val => m.add(new Option(val, val)));
-            for (let i = 1; i <= 31; i++) { d.add(new Option(String(i).padStart(2, '0'), String(i).padStart(2, '0'))); }
-            const curY = new Date().getFullYear();
-            for (let i = curY - 10; i <= curY + 5; i++) { y.add(new Option(i, i)); }
+            for (let i = 1; i <= 31; i++) {
+                const val = String(i).padStart(2, '0');
+                d.add(new Option(val, val));
+            }
+            const currentYear = new Date().getFullYear();
+            for (let i = currentYear - 10; i <= currentYear + 5; i++) {
+                y.add(new Option(i, i));
+            }
         });
     }
 
     function calculate() {
         const funding = parseFloat(document.getElementById('funding').value) || 0;
         const newFunding = parseFloat(document.getElementById('newFunding').value) || 0;
-        const start = new Date(document.getElementById('startY').value, document.getElementById('startM').value - 1, document.getElementById('startD').value);
-        const end = new Date(document.getElementById('endY').value, document.getElementById('endM').value - 1, document.getElementById('endD').value);
-        
+
+        const start = new Date(
+            document.getElementById('startY').value,
+            document.getElementById('startM').value - 1,
+            document.getElementById('startD').value
+        );
+        const end = new Date(
+            document.getElementById('endY').value,
+            document.getElementById('endM').value - 1,
+            document.getElementById('endD').value
+        );
+
         let active = 0;
         if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
             let mDiff = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
             if (end.getDate() < start.getDate()) mDiff--;
             active = Math.max(0, mDiff);
         }
-        
+
         const remaining = Math.max(0, 48 - active);
-        const net = Math.max(0, (funding / 48 * remaining) - newFunding);
+        const grossLiability = (funding / 48) * remaining;
+        const netPayable = Math.max(0, grossLiability - newFunding);
 
         document.getElementById('mActive').innerText = active;
         document.getElementById('mLeft').innerText = remaining;
-        document.getElementById('finalAmt').innerText = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(net);
+        document.getElementById('finalAmt').innerText = formatCurr(netPayable);
     }
 
     function addToList() {
@@ -147,7 +207,7 @@
 
     function renderList() {
         const container = document.getElementById('trackingList');
-        container.innerHTML = savedDeals.length ? '' : '<p style="color:#999; font-size:0.8rem;">No deals saved yet.</p>';
+        container.innerHTML = savedDeals.length ? '' : '<p style="color:#aaa; font-size:0.8rem; text-align:center; padding-top:20px;">No saved deals.</p>';
         savedDeals.forEach(deal => {
             container.innerHTML += `
                 <div class="list-item">
@@ -169,12 +229,19 @@
         document.getElementById('newFunding').value = 0;
         document.getElementById('accName').value = "";
         const today = new Date();
-        document.getElementById('startM').value = "01"; document.getElementById('startD').value = "01"; document.getElementById('startY').value = today.getFullYear() - 1;
+        document.getElementById('startM').value = "01";
+        document.getElementById('startD').value = "01";
+        document.getElementById('startY').value = today.getFullYear() - 1;
         document.getElementById('endM').value = String(today.getMonth() + 1).padStart(2, '0');
         document.getElementById('endD').value = String(today.getDate()).padStart(2, '0');
         document.getElementById('endY').value = today.getFullYear();
         calculate();
     }
+
+    function formatCurr(num) {
+        return new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(num);
+    }
 </script>
+
 </body>
 </html>
