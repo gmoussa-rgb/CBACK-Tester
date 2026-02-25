@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liability Dashboard</title>
     <style>
-        :root { --primary: #2c3e50; --accent: #d32f2f; --bg: #f0f2f5; }
+        :root { --primary: #2c3e50; --debt-red: #d32f2f; --gain-green: #2e7d32; --bg: #f0f2f5; }
         
         body { 
             font-family: -apple-system, sans-serif; 
@@ -27,12 +27,12 @@
         }
         
         .card { background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); height: fit-content; }
-        h2 { margin-top: 0; font-size: 1.1rem; text-transform: uppercase; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 12px; margin-bottom: 20px; }
+        h2 { margin-top: 0; font-size: 1.1rem; text-transform: uppercase; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 12px; margin-bottom: 20px; text-align: center; }
         
         .form-group { margin-bottom: 1.2rem; }
         label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; font-size: 0.85rem; }
         
-        /* Remove Spinners */
+        /* Remove Spinners for numeric inputs */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
@@ -51,15 +51,19 @@
         
         .results { background: #f8f9fa; padding: 1.2rem; border-radius: 8px; margin-top: 1.5rem; border: 1px solid #e9ecef; }
         .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.95rem; }
-        .total-row { border-top: 2px solid #333; margin-top: 10px; padding-top: 10px; font-weight: 800; font-size: 1.2rem; }
+        .total-row { border-top: 2px solid #333; margin-top: 10px; padding-top: 10px; font-weight: 800; font-size: 1.2rem; align-items: center;}
         
+        /* Dynamic Colors */
+        .liability-debt { color: var(--debt-red); }
+        .liability-gain { color: var(--gain-green); }
+
         .btn-add { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 0.9rem; }
         .btn-reset { width: 100%; background: none; border: 1px solid #ccc; padding: 8px; border-radius: 6px; margin-top: 12px; cursor: pointer; font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .sidebar { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         .list-item { background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 12px; border-left: 5px solid var(--primary); position: relative; }
         .list-name { font-weight: bold; display: block; font-size: 0.9rem; margin-bottom: 3px; color: #333; }
-        .list-amt { color: var(--accent); font-weight: 800; font-size: 1rem; }
+        .list-amt { font-weight: 800; font-size: 1rem; }
         .btn-del { position: absolute; right: 12px; top: 15px; background: none; border: none; color: #bbb; cursor: pointer; font-size: 1.2rem; line-height: 1; }
 
         @media (max-width: 850px) { .dashboard { grid-template-columns: 1fr; } body { padding: 10px; } }
@@ -108,8 +112,8 @@
             <div class="row"><span>Months Active:</span><span id="mActive">0</span></div>
             <div class="row"><span>Months Remaining:</span><span id="mLeft">48</span></div>
             <div class="row total-row">
-                <span>NET PAYABLE:</span>
-                <span id="finalAmt" style="color:var(--accent)">$0.00</span>
+                <span>LIABILITY AMOUNT:</span>
+                <span id="finalAmt">$0.00</span>
             </div>
         </div>
 
@@ -169,7 +173,6 @@
         const eM = document.getElementById('endM').value;
         const eD = document.getElementById('endD').value;
 
-        // Only calculate if all parts of BOTH dates are selected
         if (!sY || !sM || !sD || !eY || !eM || !eD) {
             updateUI(0, 48, 0);
             return;
@@ -187,21 +190,39 @@
 
         const remaining = Math.max(0, 48 - active);
         const grossLiability = (funding / 48) * remaining;
-        const netPayable = Math.max(0, grossLiability - newFunding);
+        
+        // Final logic: Debt vs Gain
+        const netLiability = grossLiability - newFunding;
 
-        updateUI(active, remaining, netPayable);
+        updateUI(active, remaining, netLiability);
     }
 
     function updateUI(active, remaining, net) {
         document.getElementById('mActive').innerText = active;
         document.getElementById('mLeft').innerText = remaining;
-        document.getElementById('finalAmt').innerText = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(net);
+        
+        const el = document.getElementById('finalAmt');
+        const formatted = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(Math.abs(net));
+
+        if (net > 0) {
+            el.innerText = "-" + formatted;
+            el.className = "liability-debt";
+        } else if (net < 0) {
+            el.innerText = "+" + formatted;
+            el.className = "liability-gain";
+        } else {
+            el.innerText = "$0.00";
+            el.className = "";
+        }
     }
 
     function addToList() {
         const name = document.getElementById('accName').value || "Unnamed Account";
-        const amount = document.getElementById('finalAmt').innerText;
-        savedDeals.push({ name, amount, id: Date.now() });
+        const el = document.getElementById('finalAmt');
+        const amount = el.innerText;
+        const colorClass = el.className;
+        
+        savedDeals.push({ name, amount, colorClass, id: Date.now() });
         localStorage.setItem('savedDeals', JSON.stringify(savedDeals));
         renderList();
         document.getElementById('accName').value = "";
@@ -211,7 +232,12 @@
         const container = document.getElementById('trackingList');
         container.innerHTML = savedDeals.length ? '' : '<p style="color:#aaa; font-size:0.8rem; text-align:center; padding-top:20px;">No saved deals.</p>';
         savedDeals.forEach(deal => {
-            container.innerHTML += `<div class="list-item"><span class="list-name">${deal.name}</span><span class="list-amt">${deal.amount}</span><button class="btn-del" onclick="deleteItem(${deal.id})">×</button></div>`;
+            container.innerHTML += `
+                <div class="list-item">
+                    <span class="list-name">${deal.name}</span>
+                    <span class="list-amt ${deal.colorClass}">${deal.amount}</span>
+                    <button class="btn-del" onclick="deleteItem(${deal.id})">×</button>
+                </div>`;
         });
     }
 
@@ -225,18 +251,14 @@
         document.getElementById('funding').value = 0;
         document.getElementById('newFunding').value = 0;
         document.getElementById('accName').value = "";
-        
-        // Reset Activation to placeholders
         document.getElementById('startM').value = "";
         document.getElementById('startD').value = "";
         document.getElementById('startY').value = "";
 
-        // Default Shutdown to Today
         const today = new Date();
         document.getElementById('endM').value = String(today.getMonth() + 1).padStart(2, '0');
         document.getElementById('endD').value = String(today.getDate()).padStart(2, '0');
         document.getElementById('endY').value = today.getFullYear();
-        
         calculate();
     }
 </script>
