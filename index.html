@@ -3,13 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liability Dashboard Pro + Bulk</title>
+    <title>Liability Ledger Pro</title>
     <style>
-        :root { --primary: #2c3e50; --debt-red: #d32f2f; --gain-green: #2e7d32; --bg: #f0f2f5; }
+        :root { 
+            --primary: #2c3e50; 
+            --primary-hover: #34495e;
+            --debt-red: #d32f2f; 
+            --debt-hover: #b71c1c;
+            --gain-green: #2e7d32; 
+            --gain-hover: #1b5e20;
+            --bg: #f0f2f5; 
+        }
         
         body { font-family: -apple-system, sans-serif; background-color: var(--bg); margin: 0; padding: 40px 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
         
-        .dashboard { display: grid; grid-template-columns: 1fr 400px; gap: 30px; width: 100%; max-width: 1100px; }
+        .dashboard { display: grid; grid-template-columns: 1fr 420px; gap: 30px; width: 100%; max-width: 1150px; }
         
         .card, .sidebar { background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); height: fit-content; }
         h2 { margin-top: 0; font-size: 1.1rem; text-transform: uppercase; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 12px; margin-bottom: 20px; text-align: center; }
@@ -17,63 +25,55 @@
         .form-group { margin-bottom: 1.2rem; }
         label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; font-size: 0.85rem; }
         
-        /* Remove Spinners */
         input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
 
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1rem; background: #fff; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1rem; background: #fff; transition: border-color 0.2s; }
+        input:focus, select:focus { border-color: var(--primary); outline: none; }
         .date-row { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 8px; }
         
-        .results { background: #f8f9fa; padding: 1.2rem; border-radius: 8px; margin-top: 1.5rem; border: 1px solid #e9ecef; }
+        .results { background: #f8f9fa; padding: 1.2rem; border-radius: 10px; margin-top: 1.5rem; border: 1px solid #e9ecef; }
         .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.95rem; }
-        .total-row { border-top: 2px solid #333; margin-top: 10px; padding-top: 10px; font-weight: 800; font-size: 1.2rem; }
+        .total-row { border-top: 2px solid #333; margin-top: 10px; padding-top: 10px; font-weight: 800; font-size: 1.3rem; }
         
         .liability-debt { color: var(--debt-red); }
         .liability-gain { color: var(--gain-green); }
 
-        /* Main Action Buttons */
-        .btn-add { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 0.9rem; }
-        
-        /* Highlighted Reset/Clear Buttons */
-        .btn-reset, .btn-clear-all { 
-            width: 100%; 
-            background: none; 
-            border: 1px solid var(--debt-red); 
-            color: var(--debt-red); 
-            padding: 10px; 
-            border-radius: 6px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            margin-top: 15px; 
-            font-size: 0.75rem; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px;
-            transition: all 0.2s ease;
+        /* Highlighted Button Styling */
+        button, .btn-upload-label { 
+            width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; 
+            text-align: center; display: block; box-sizing: border-box; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;
         }
-        .btn-reset:hover, .btn-clear-all:hover { 
-            background: #fff5f5; 
-            box-shadow: 0 2px 5px rgba(211, 47, 47, 0.1);
-        }
-        
+        button:hover, .btn-upload-label:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        .btn-add { background: var(--primary); color: white; border: none; padding: 16px; margin-top: 20px; }
+        .btn-add:hover { background: var(--primary-hover); }
+
+        .btn-upload-label { background: #fff; border: 2px dashed var(--primary); color: var(--primary); padding: 12px; margin-top: 15px; }
+        .btn-upload-label:hover { background: #f4f6f8; }
+
+        .btn-reset, .btn-clear-all { background: none; border: 1px solid var(--debt-red); color: var(--debt-red); padding: 10px; margin-top: 15px; }
+        .btn-reset:hover, .btn-clear-all:hover { background: #fff5f5; border-color: var(--debt-hover); color: var(--debt-hover); }
+
+        .btn-csv { background: var(--gain-green); color: white; border: none; padding: 14px; margin-top: 20px; }
+        .btn-csv:hover { background: var(--gain-hover); }
+
         /* List Styling */
         .list-item { background: #fdfdfd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee; border-left: 6px solid var(--primary); position: relative; font-size: 0.85rem; text-align: left; }
-        .list-details { color: #666; line-height: 1.4; margin-top: 5px; }
+        .list-details { color: #666; line-height: 1.5; margin-top: 8px; border-top: 1px solid #f0f0f0; padding-top: 8px; }
         .list-name { font-weight: 800; font-size: 1rem; color: var(--primary); }
-        .list-amt { font-weight: 800; font-size: 1.1rem; display: block; margin-top: 8px; }
-        .btn-del { position: absolute; right: 10px; top: 10px; background: none; border: none; color: #bbb; cursor: pointer; font-size: 1.4rem; }
-        
-        /* Sidebar Action Buttons */
-        .btn-csv { width: 100%; background: var(--gain-green); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 0.85rem; }
-        .btn-upload { width: 100%; background: #fff; border: 2px dashed var(--primary); color: var(--primary); padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 0.85rem; display: block; text-align: center; }
+        .list-amt { font-weight: 800; font-size: 1.1rem; display: block; margin-top: 10px; }
+        .btn-del { position: absolute; right: 10px; top: 10px; background: none !important; border: none !important; color: #bbb !important; box-shadow: none !important; width: auto !important; padding: 0 !important; font-size: 1.4rem !important; text-transform: none !important; }
+        .btn-del:hover { color: var(--debt-red) !important; transform: none !important; }
 
-        @media (max-width: 950px) { .dashboard { grid-template-columns: 1fr; } }
+        @media (max-width: 1000px) { .dashboard { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
     <div class="card">
-        <h2>Liability Calculator</h2>
+        <h2>Calculator</h2>
         
         <div class="form-group">
             <label>Account Name</label>
@@ -110,7 +110,11 @@
 
         <div class="results">
             <div class="row"><span>Months Active:</span><span id="mActive">0</span></div>
-            <div class="row"><span>Months Remaining:</span><span id="mLeft">48</span></div>
+            <div class="row"><span>Months Remaining (of 48):</span><span id="mLeft">48</span></div>
+            <hr style="border: 0; border-top: 1px solid #ddd; margin: 8px 0;">
+            <div class="row"><span>Initial Funding:</span><span id="resInitial">$0.00</span></div>
+            <div class="row"><span>Clawback Amount:</span><span id="resClawback">$0.00</span></div>
+            <div class="row"><span>New Funding Offset:</span><span id="resOffset" style="color:var(--gain-green)">$0.00</span></div>
             <div class="row total-row">
                 <span>LIABILITY AMOUNT:</span>
                 <span id="finalAmt">$0.00</span>
@@ -118,18 +122,18 @@
         </div>
 
         <button class="btn-add" onclick="addToList()">Add to Tracking List</button>
+        
+        <label class="btn-upload-label">
+            Bulk Upload CSV
+            <input type="file" id="csvInput" accept=".csv" style="display:none;" onchange="handleFileUpload(event)">
+        </label>
+        
         <button class="btn-reset" onclick="resetAll()">Reset All Fields</button>
     </div>
 
     <div class="sidebar">
         <h2>Tracking List</h2>
         <div id="trackingList"></div>
-        
-        <label class="btn-upload">
-            Bulk Upload CSV
-            <input type="file" id="csvInput" accept=".csv" style="display:none;" onchange="handleFileUpload(event)">
-        </label>
-        
         <button class="btn-csv" onclick="downloadCSV()">Download Export (CSV)</button>
         <button class="btn-clear-all" onclick="clearAllItems()">Clear All Items</button>
     </div>
@@ -158,13 +162,13 @@
 
     function getLiabilityData(fund, off, sDateStr, eDateStr) {
         const start = new Date(sDateStr), end = new Date(eDateStr);
-        if (isNaN(start.getTime()) || isNaN(end.getTime())) return { active: 0, net: 0 };
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) return { active: 0, rem: 48, clawback: 0, net: 0 };
         let mDiff = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
         if (end.getDate() < start.getDate()) mDiff--;
         const active = Math.max(0, mDiff);
         const rem = Math.max(0, 48 - active);
-        const net = (fund / 48 * rem) - off;
-        return { active, net };
+        const clawback = (fund / 48) * rem;
+        return { active, rem, clawback, net: clawback - off };
     }
 
     function calculate() {
@@ -172,17 +176,18 @@
         const offset = parseFloat(document.getElementById('newFunding').value) || 0;
         const startStr = `${document.getElementById('startM').value}/${document.getElementById('startD').value}/${document.getElementById('startY').value}`;
         const endStr = `${document.getElementById('endM').value}/${document.getElementById('endD').value}/${document.getElementById('endY').value}`;
-        const result = getLiabilityData(funding, offset, startStr, endStr);
-        updateUI(result.active, Math.max(0, 48 - result.active), result.net);
-    }
+        const data = getLiabilityData(funding, offset, startStr, endStr);
 
-    function updateUI(active, remaining, net) {
-        document.getElementById('mActive').innerText = active;
-        document.getElementById('mLeft').innerText = remaining;
+        document.getElementById('mActive').innerText = data.active;
+        document.getElementById('mLeft').innerText = data.rem;
+        document.getElementById('resInitial').innerText = formatCurr(funding);
+        document.getElementById('resClawback').innerText = formatCurr(data.clawback);
+        document.getElementById('resOffset').innerText = "-" + formatCurr(offset);
+        
         const el = document.getElementById('finalAmt');
-        const formatted = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(Math.abs(net));
-        if (net > 0) { el.innerText = "-" + formatted; el.className = "liability-debt"; }
-        else if (net < 0) { el.innerText = "+" + formatted; el.className = "liability-gain"; }
+        const formatted = formatCurr(Math.abs(data.net));
+        if (data.net > 0) { el.innerText = "-" + formatted; el.className = "liability-debt"; }
+        else if (data.net < 0) { el.innerText = "+" + formatted; el.className = "liability-gain"; }
         else { el.innerText = "$0.00"; el.className = ""; }
     }
 
@@ -197,30 +202,28 @@
                 if (cols.length >= 5) {
                     const name = cols[0], funding = parseFloat(cols[1]), start = cols[2], end = cols[3], offset = parseFloat(cols[4]);
                     const calc = getLiabilityData(funding, offset, start, end);
-                    const formattedAmt = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(Math.abs(calc.net));
-                    let finalStr = "$0.00", color = "";
-                    if (calc.net > 0) { finalStr = "-" + formattedAmt; color = "liability-debt"; }
-                    else if (calc.net < 0) { finalStr = "+" + formattedAmt; color = "liability-gain"; }
-                    savedDeals.push({ id: Date.now() + i, name, original: funding, start, end, offset, active: calc.active, amount: finalStr, color: color });
+                    let netStr = "$0.00", color = "";
+                    if (calc.net > 0) { netStr = "-" + formatCurr(Math.abs(calc.net)); color = "liability-debt"; }
+                    else if (calc.net < 0) { netStr = "+" + formatCurr(Math.abs(calc.net)); color = "liability-gain"; }
+                    savedDeals.push({ id: Date.now() + i, name, initial: funding, start, end, clawback: calc.clawback, offset: offset, active: calc.active, netAmt: netStr, color: color });
                 }
             }
             localStorage.setItem('savedDeals', JSON.stringify(savedDeals));
             renderList();
-            event.target.value = "";
         };
         reader.readAsText(file);
     }
 
     function addToList() {
-        const name = document.getElementById('accName').value || "Unnamed Account";
-        const funding = document.getElementById('funding').value;
-        const start = `${document.getElementById('startM').value}/${document.getElementById('startD').value}/${document.getElementById('startY').value}`;
+        const funding = parseFloat(document.getElementById('funding').value) || 0;
+        const sM = document.getElementById('startM').value, sD = document.getElementById('startD').value, sY = document.getElementById('startY').value;
+        if(!sM || !sD || !sY) return alert("Please select an activation date.");
+        const start = `${sM}/${sD}/${sY}`;
         const end = `${document.getElementById('endM').value}/${document.getElementById('endD').value}/${document.getElementById('endY').value}`;
-        const offset = document.getElementById('newFunding').value;
-        const active = document.getElementById('mActive').innerText;
-        const amount = document.getElementById('finalAmt').innerText;
-        const color = document.getElementById('finalAmt').className;
-        savedDeals.push({ id: Date.now(), name, original: funding, start, end, offset, active, amount, color });
+        const offset = parseFloat(document.getElementById('newFunding').value) || 0;
+        const data = getLiabilityData(funding, offset, start, end);
+        const el = document.getElementById('finalAmt');
+        savedDeals.push({ id: Date.now(), name: document.getElementById('accName').value || "Unnamed Account", initial: funding, start, end, clawback: data.clawback, offset: offset, active: data.active, netAmt: el.innerText, color: el.className });
         localStorage.setItem('savedDeals', JSON.stringify(savedDeals));
         renderList();
         document.getElementById('accName').value = "";
@@ -230,35 +233,25 @@
         const container = document.getElementById('trackingList');
         container.innerHTML = savedDeals.length ? '' : '<p style="color:#aaa; text-align:center; padding-top:20px;">No saved deals.</p>';
         savedDeals.forEach(deal => {
-            container.innerHTML += `<div class="list-item"><button class="btn-del" onclick="deleteItem(${deal.id})">×</button><span class="list-name">${deal.name}</span><div class="list-details">Funding: $${Number(deal.original).toLocaleString()}<br>Dates: ${deal.start} - ${deal.end}<br>Offset: $${Number(deal.offset).toLocaleString()}</div><span class="list-amt ${deal.color}">${deal.amount}</span></div>`;
+            container.innerHTML += `<div class="list-item"><button class="btn-del" onclick="deleteItem(${deal.id})">×</button><span class="list-name">${deal.name}</span><div class="list-details"><b>Initial Funding:</b> ${formatCurr(deal.initial)}<br><b>Dates:</b> ${deal.start} - ${deal.end}<br><b>Clawback:</b> ${formatCurr(deal.clawback)}<br><b>Offset:</b> ${formatCurr(deal.offset)}</div><span class="list-amt ${deal.color}">${deal.netAmt}</span></div>`;
         });
     }
 
     function downloadCSV() {
         if (!savedDeals.length) return alert("No data to export!");
-        let csv = "Account Name,Original Funding,Start Date,End Date,Offset,Months Active,Liability Amount\n";
-        savedDeals.forEach(d => { csv += `"${d.name}","${d.original}","${d.start}","${d.end}","${d.offset}","${d.active}","${d.amount}"\n`; });
+        let csv = "Account Name,Initial Funding,Start Date,End Date,Clawback,Offset,Net Liability\n";
+        savedDeals.forEach(d => { csv += `"${d.name}","${d.initial}","${d.start}","${d.end}","${d.clawback}","${d.offset}","${d.netAmt}"\n`; });
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.setAttribute('href', url);
-        a.setAttribute('download', `Liability_Export_${new Date().toISOString().split('T')[0]}.csv`);
+        a.setAttribute('download', `Liability_Report.csv`);
         a.click();
     }
 
-    function clearAllItems() {
-        if (savedDeals.length > 0 && confirm("Delete ALL tracked deals?")) {
-            savedDeals = [];
-            localStorage.setItem('savedDeals', JSON.stringify(savedDeals));
-            renderList();
-        }
-    }
-
-    function deleteItem(id) {
-        savedDeals = savedDeals.filter(d => d.id !== id);
-        localStorage.setItem('savedDeals', JSON.stringify(savedDeals));
-        renderList();
-    }
+    function clearAllItems() { if (confirm("Delete ALL tracked deals?")) { savedDeals = []; localStorage.setItem('savedDeals', JSON.stringify(savedDeals)); renderList(); } }
+    function deleteItem(id) { savedDeals = savedDeals.filter(d => d.id !== id); localStorage.setItem('savedDeals', JSON.stringify(savedDeals)); renderList(); }
+    function formatCurr(num) { return new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(num); }
 
     function resetAll() {
         document.getElementById('funding').value = 0; document.getElementById('newFunding').value = 0; document.getElementById('accName').value = "";
