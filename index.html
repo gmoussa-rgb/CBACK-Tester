@@ -186,8 +186,8 @@
             d.add(new Option("DD", "")); for (let i = 1; i <= 31; i++) d.add(new Option(String(i).padStart(2, '0'), String(i).padStart(2, '0')));
             
             y.add(new Option("YYYY", ""));
-            // Loops from 10 years in future down to 10 years in past
-            for (let i = currentYear + 10; i >= currentYear - 10; i--) {
+            // Loops from current year down to 15 years in past
+            for (let i = currentYear; i >= currentYear - 15; i--) {
                 y.add(new Option(i, i));
             }
         });
