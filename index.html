@@ -5,17 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liability Calculator</title>
     <style>
-        body { font-family: sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); width: 90%; max-width: 400px; }
-        h2 { margin-top: 0; text-align: center; color: #333; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 0.9rem; }
+        body { font-family: -apple-system, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 10px; }
+        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); width: 100%; max-width: 420px; }
+        h2 { margin-top: 0; text-align: center; color: #333; font-size: 1.2rem; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; font-size: 0.85rem; }
         input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
-        .results { background: #f9f9f9; padding: 1rem; border-radius: 8px; margin-top: 1.5rem; border: 1px solid #eee; }
-        .row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.95rem; }
-        .total-row { border-top: 2px solid #333; margin-top: 10px; padding-top: 10px; font-weight: bold; font-size: 1.2rem; }
+        .date-row { display: grid; grid-template-columns: 1.2fr 1fr 1.2fr; gap: 8px; }
+        select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem; background: #fff; cursor: pointer; }
+        .results { background: #f9f9f9; padding: 1.2rem; border-radius: 8px; margin-top: 1.5rem; border: 1px solid #eee; }
+        .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.95rem; }
+        .total-row { border-top: 2px solid #333; margin-top: 12px; padding-top: 12px; font-weight: 800; font-size: 1.25rem; }
         .payback { color: #d32f2f; }
-        .credit { color: #2e7d32; }
+        .btn-reset { width: 100%; background: #6c757d; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 1.5rem; font-size: 0.85rem; text-transform: uppercase; }
+        .btn-reset:hover { background: #5a6268; }
     </style>
 </head>
 <body>
@@ -29,13 +32,21 @@
     </div>
 
     <div class="form-group">
-        <label>Activation Date</label>
-        <input type="date" id="startDate" oninput="calculate()">
+        <label>Activation Date (MM / DD / YYYY)</label>
+        <div class="date-row">
+            <select id="startM" onchange="calculate()"></select>
+            <select id="startD" onchange="calculate()"></select>
+            <select id="startY" onchange="calculate()"></select>
+        </div>
     </div>
 
     <div class="form-group">
-        <label>Shutdown Date</label>
-        <input type="date" id="endDate" oninput="calculate()">
+        <label>Shutdown Date (MM / DD / YYYY)</label>
+        <div class="date-row">
+            <select id="endM" onchange="calculate()"></select>
+            <select id="endD" onchange="calculate()"></select>
+            <select id="endY" onchange="calculate()"></select>
+        </div>
     </div>
 
     <div class="form-group">
@@ -47,45 +58,87 @@
         <div class="row"><span>Months Active:</span><span id="mActive">0</span></div>
         <div class="row"><span>Months Remaining:</span><span id="mLeft">48</span></div>
         <div class="row"><span>Gross Liability:</span><span id="grossLiab">$0.00</span></div>
-        <div class="row"><span>New Funding Credit:</span><span id="creditAmt" class="credit">-$0.00</span></div>
+        <div class="row"><span>New Funding Credit:</span><span id="creditAmt" style="color:#2e7d32">-$0.00</span></div>
         
         <div class="row total-row">
             <span>NET PAYABLE:</span>
             <span id="finalAmt" class="payback">$0.00</span>
         </div>
     </div>
+
+    <button class="btn-reset" onclick="resetAll()">Reset All Fields</button>
 </div>
 
 <script>
-    // Default the date to today, but amounts to 0
+    const months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+    
     window.onload = function() {
-        document.getElementById('endDate').valueAsDate = new Date();
-        calculate();
+        populateDropdowns();
+        resetAll();
     };
+
+    function populateDropdowns() {
+        const selects = ['start', 'end'];
+        selects.forEach(prefix => {
+            const m = document.getElementById(prefix + 'M');
+            const d = document.getElementById(prefix + 'D');
+            const y = document.getElementById(prefix + 'Y');
+
+            months.forEach(val => m.add(new Option(val, val)));
+            for (let i = 1; i <= 31; i++) {
+                const val = String(i).padStart(2, '0');
+                d.add(new Option(val, val));
+            }
+            const currentYear = new Date().getFullYear();
+            for (let i = currentYear - 10; i <= currentYear + 5; i++) {
+                y.add(new Option(i, i));
+            }
+        });
+    }
+
+    function resetAll() {
+        document.getElementById('funding').value = 0;
+        document.getElementById('newFunding').value = 0;
+        
+        const today = new Date();
+        document.getElementById('startM').value = "01";
+        document.getElementById('startD').value = "01";
+        document.getElementById('startY').value = today.getFullYear() - 1;
+
+        document.getElementById('endM').value = String(today.getMonth() + 1).padStart(2, '0');
+        document.getElementById('endD').value = String(today.getDate()).padStart(2, '0');
+        document.getElementById('endY').value = today.getFullYear();
+
+        calculate();
+    }
 
     function calculate() {
         const funding = parseFloat(document.getElementById('funding').value) || 0;
         const newFunding = parseFloat(document.getElementById('newFunding').value) || 0;
-        const start = new Date(document.getElementById('startDate').value);
-        const end = new Date(document.getElementById('endDate').value);
+
+        const start = new Date(
+            document.getElementById('startY').value,
+            document.getElementById('startM').value - 1,
+            document.getElementById('startD').value
+        );
+        const end = new Date(
+            document.getElementById('endY').value,
+            document.getElementById('endM').value - 1,
+            document.getElementById('endD').value
+        );
 
         let active = 0;
-        let remaining = 48;
-        let grossLiability = 0;
-
         if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
-            let months = (end.getFullYear() - start.getFullYear()) * 12;
-            months += end.getMonth() - start.getMonth();
-            if (end.getDate() < start.getDate()) months--;
-
-            active = Math.max(0, months);
-            remaining = Math.max(0, 48 - active);
-            grossLiability = (funding / 48) * remaining;
+            let monthsDiff = (end.getFullYear() - start.getFullYear()) * 12;
+            monthsDiff += end.getMonth() - start.getMonth();
+            if (end.getDate() < start.getDate()) monthsDiff--;
+            active = Math.max(0, monthsDiff);
         }
 
+        const remaining = Math.max(0, 48 - active);
+        const grossLiability = (funding / 48) * remaining;
         const netPayable = Math.max(0, grossLiability - newFunding);
 
-        // Update Display
         document.getElementById('mActive').innerText = active;
         document.getElementById('mLeft').innerText = remaining;
         document.getElementById('grossLiab').innerText = formatCurr(grossLiability);
